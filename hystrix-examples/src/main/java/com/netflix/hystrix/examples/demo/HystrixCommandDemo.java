@@ -123,12 +123,13 @@ public class HystrixCommandDemo {
                     }
 
                     // we are using default names so can use class.getSimpleName() to derive the keys
+                    //因为我们使用的是默认名称，所以可以使用class.getSimpleName()来派生这些键
                     HystrixCommandMetrics creditCardMetrics = HystrixCommandMetrics.getInstance(HystrixCommandKey.Factory.asKey(CreditCardCommand.class.getSimpleName()));
                     HystrixCommandMetrics orderMetrics = HystrixCommandMetrics.getInstance(HystrixCommandKey.Factory.asKey(GetOrderCommand.class.getSimpleName()));
                     HystrixCommandMetrics userAccountMetrics = HystrixCommandMetrics.getInstance(HystrixCommandKey.Factory.asKey(GetUserAccountCommand.class.getSimpleName()));
                     HystrixCommandMetrics paymentInformationMetrics = HystrixCommandMetrics.getInstance(HystrixCommandKey.Factory.asKey(GetPaymentInformationCommand.class.getSimpleName()));
 
-                    // print out metrics
+                    // print out metrics 打印出指标
                     StringBuilder out = new StringBuilder();
                     out.append("\n");
                     out.append("#####################################################################################").append("\n");

@@ -32,6 +32,10 @@ public class CommandUsingSemaphoreIsolation extends HystrixCommand<String> {
         super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("ExampleGroup"))
                 // since we're doing work in the run() method that doesn't involve network traffic
                 // and executes very fast with low risk we choose SEMAPHORE isolation
+                /**
+                 * 因为我们在run()方法中做的工作不涉及网络流量
+                 * 并且执行速度快，风险低，我们选择信号量隔离
+                 */
                 .andCommandPropertiesDefaults(HystrixCommandProperties.Setter()
                         .withExecutionIsolationStrategy(ExecutionIsolationStrategy.SEMAPHORE)));
         this.id = id;
@@ -41,6 +45,8 @@ public class CommandUsingSemaphoreIsolation extends HystrixCommand<String> {
     protected String run() {
         // a real implementation would retrieve data from in memory data structure
         // or some other similar non-network involved work
+        //真正的实现将从内存数据结构中检索数据
+        ////或其他类似的与网络无关的工作
         return "ValueFromHashMap_" + id;
     }
 

@@ -140,10 +140,10 @@ public interface HystrixCircuitBreaker {
         private final HystrixCommandMetrics metrics;
 
         enum Status {
-            CLOSED, OPEN, HALF_OPEN;
+            CLOSED, OPEN, HALF_OPEN; //关闭  打开 半开状态
         }
 
-        private final AtomicReference<Status> status = new AtomicReference<Status>(Status.CLOSED);
+        private final AtomicReference<Status> status = new AtomicReference<Status>(Status.CLOSED);//并发保证安全
         private final AtomicLong circuitOpened = new AtomicLong(-1);
         private final AtomicReference<Subscription> activeSubscription = new AtomicReference<Subscription>(null);
 
