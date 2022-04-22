@@ -30,6 +30,10 @@ import com.netflix.hystrix.HystrixCommandGroupKey;
 
 /**
  * The obligatory "Hello World!" showing a simple implementation of a {@link HystrixCommand}.
+ * 这是命令模式的简单的使用
+ * 1 同步执行
+ * 2 异步执行
+ * 3 订阅执行
  */
 public class CommandHelloWorld extends HystrixCommand<String> {
 
@@ -129,6 +133,19 @@ public class CommandHelloWorld extends HystrixCommand<String> {
             
             // More information about Observable can be found at https://github.com/Netflix/RxJava/wiki/How-To-Use
 
+        }
+        @Test
+        public void testObservable1() throws Exception {
+            Observable<String> observe = new CommandHelloWorld("custom test").observe();
+
+            observe.toBlocking().single();//阻塞，如果用户生产环境，就要重新审视下设计啦
+            observe.subscribe(new Action1<String>() {
+                @Override
+                public void call(String s) {
+
+                    System.out.println(s);
+                }
+            });
         }
     }
 

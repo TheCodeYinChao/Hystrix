@@ -61,6 +61,12 @@ public class CommandUsingRequestCache extends HystrixCommand<Boolean> {
             }
         }
 
+        /**
+         * 缓存的用法
+         * 1 初始化上下文环境
+         * 2 执行run
+         * 3 再次实例化执行 则从缓存中获取
+         */
         @Test
         public void testWithCacheHits() {
             HystrixRequestContext context = HystrixRequestContext.initializeContext();

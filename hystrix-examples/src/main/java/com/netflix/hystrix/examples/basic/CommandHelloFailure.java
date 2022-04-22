@@ -26,6 +26,9 @@ import com.netflix.hystrix.HystrixCommandGroupKey;
 
 /**
  * Sample {@link HystrixCommand} showing a basic fallback implementation.
+ *
+ * 简单的失败demo  包含 同步失败的一种情况  异步失败的两种情况
+ *
  */
 public class CommandHelloFailure extends HystrixCommand<String> {
 

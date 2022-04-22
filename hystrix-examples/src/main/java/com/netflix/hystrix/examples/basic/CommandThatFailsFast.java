@@ -26,6 +26,7 @@ import com.netflix.hystrix.exception.HystrixRuntimeException;
 /**
  * Sample {@link HystrixCommand} that does not have a fallback implemented
  * so will "fail fast" when failures, rejections, short-circuiting etc occur.
+ * 因此将会快速失败，当发生失败，拒绝，短路等情况时
  */
 public class CommandThatFailsFast extends HystrixCommand<String> {
 

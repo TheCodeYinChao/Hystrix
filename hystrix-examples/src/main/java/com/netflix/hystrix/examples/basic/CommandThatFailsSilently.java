@@ -31,6 +31,7 @@ import com.netflix.hystrix.exception.HystrixRuntimeException;
  * Sample {@link HystrixCommand} that has a fallback implemented
  * that will "fail silent" when failures, rejections, short-circuiting etc occur
  * by returning an empty List.
+ * 通过返回空list来模拟静默失败
  */
 public class CommandThatFailsSilently extends HystrixCommand<List<String>> {
 

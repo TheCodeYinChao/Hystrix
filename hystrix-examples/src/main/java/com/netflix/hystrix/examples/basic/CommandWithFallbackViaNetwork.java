@@ -55,6 +55,7 @@ public class CommandWithFallbackViaNetwork extends HystrixCommand<String> {
 
     @Override
     protected String getFallback() {
+        //这里用了信息线程池，主要为了防止上层线程池跑满
         return new FallbackViaNetwork(id).execute();
     }
 
@@ -65,7 +66,7 @@ public class CommandWithFallbackViaNetwork extends HystrixCommand<String> {
             super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("RemoteServiceX"))
                     .andCommandKey(HystrixCommandKey.Factory.asKey("GetValueFallbackCommand"))
                     // use a different threadpool for the fallback command
-                    // so saturating the RemoteServiceX pool won't prevent
+                    // so saturating the RemoteServiceX pool won't prevent 防止RemoteServiceX线程池饱和出现回退
                     // fallbacks from executing
                     .andThreadPoolKey(HystrixThreadPoolKey.Factory.asKey("RemoteServiceXFallback")));
             this.id = id;
