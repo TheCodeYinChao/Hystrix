@@ -52,14 +52,15 @@ public class CommandCollapserGetValueForKey extends HystrixCollapser<List<String
 
     @Override
     protected HystrixCommand<List<String>> createCommand(final Collection<CollapsedRequest<String, Integer>> requests) {
-        return new BatchCommand(requests);
+        return new BatchCommand(requests);        //创建返回command对象
+
     }
 
     @Override
     protected void mapResponseToRequests(List<String> batchResponse, Collection<CollapsedRequest<String, Integer>> requests) {
         int count = 0;
         for (CollapsedRequest<String, Integer> request : requests) {
-            request.setResponse(batchResponse.get(count++));
+            request.setResponse(batchResponse.get(count++));   //手动匹配请求和响应
         }
     }
 
