@@ -15,7 +15,7 @@
  */
 /**
  * Strategy definition for event notification.
- * 
+ * 事件通知的策略定义。
  * @since 1.0.0
  */
 package com.netflix.hystrix.strategy.eventnotifier;

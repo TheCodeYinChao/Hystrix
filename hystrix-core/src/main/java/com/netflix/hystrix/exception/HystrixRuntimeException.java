@@ -30,7 +30,7 @@ public class HystrixRuntimeException extends RuntimeException {
     private final Class<? extends HystrixInvokable> commandClass;
     private final Throwable fallbackException;
     private final FailureType failureCause;
-
+// 定义失败枚举：一个7种类型
     public static enum FailureType {
         BAD_REQUEST_EXCEPTION, COMMAND_EXCEPTION, TIMEOUT, SHORTCIRCUIT, REJECTED_THREAD_EXECUTION, REJECTED_SEMAPHORE_EXECUTION, REJECTED_SEMAPHORE_FALLBACK
     }

@@ -21,8 +21,11 @@ import com.netflix.hystrix.HystrixThreadPoolKey;
 
 /**
  * Data class that get fed to event stream when a command starts executing.
+ *
+ * 当命令开始执行时，将其提供给事件流（发送事件）
  */
 public class HystrixCommandExecutionStarted extends HystrixCommandEvent {
+    // 开始执行的时候必须告诉我隔离策略，以及当前并发数
     private final HystrixCommandProperties.ExecutionIsolationStrategy isolationStrategy;
     private final int currentConcurrency;
 

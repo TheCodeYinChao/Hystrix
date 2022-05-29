@@ -33,7 +33,7 @@ public interface HystrixExecutable<R> extends HystrixInvokable<R> {
 
     /**
      * Used for synchronous execution of command.
-     * 
+     * // 同步执行，原理是：queue().get() 所以效果是同步的
      * @return R
      *         Result of {@link HystrixCommand} execution
      * @throws HystrixRuntimeException
@@ -45,6 +45,9 @@ public interface HystrixExecutable<R> extends HystrixInvokable<R> {
 
     /**
      * Used for asynchronous execution of command.
+     * public R execute();
+     * 	// 异步执行，什么时候get由调用者决定。get的时候才会阻塞：获取结果或者错误
+     * 	// 其实queue的原理是toObservable().toBlocking().toFuture()
      * <p>
      * This will queue up the command on the thread pool and return an {@link Future} to get the result once it completes.
      * <p>
@@ -87,6 +90,8 @@ public interface HystrixExecutable<R> extends HystrixInvokable<R> {
      *             via {@code Observer#onError} if invalid arguments or state were used representing a user failure, not a system failure
      * @throws IllegalStateException
      *             if invoked more than once
+     * 	// 异步执行。toObservable().subscribe(subject)  subject=ReplaySubject
+     * 	// 原理也是基于toObservable()，但是它是立马执行，且有回放的能力
      */
     public Observable<R> observe();
 

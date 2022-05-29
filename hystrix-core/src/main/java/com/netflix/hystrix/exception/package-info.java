@@ -15,7 +15,7 @@
  */
 /**
  * Custom exception implementations.
- * 
+ * 自定义异常的实现。
  * @since 1.0.0
  */
 package com.netflix.hystrix.exception;

@@ -15,7 +15,7 @@
  */
 /**
  * Strategy definition for concurrency related behavior and default implementation.
- * 
+ * 与并发相关的行为和默认实现的策略定义。
  * @since 1.0.0
  */
 package com.netflix.hystrix.strategy.concurrency;

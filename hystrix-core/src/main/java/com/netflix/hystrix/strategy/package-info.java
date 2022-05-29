@@ -15,7 +15,7 @@
  */
 /**
  * Parent package of strategies and plugin management.
- * 
+ * 父包策略和插件管理。
  * @since 1.0.0
  */
 package com.netflix.hystrix.strategy;

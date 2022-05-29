@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This class samples current Hystrix utilization of resources and exposes that as a stream
+ * 使用、利用（使用率、利用率）。这个类对当前Hystrix资源的利用情况进行采样，并将其公开为流。
  */
 public class HystrixUtilizationStream {
     private final int intervalInMilliseconds;

@@ -40,16 +40,18 @@ public abstract class HystrixCommandEvent implements HystrixEvent {
         return threadPoolKey;
     }
 
-    public abstract boolean isExecutionStart();
+    public abstract boolean isExecutionStart();// command是否开始
 
-    public abstract boolean isExecutedInThread();
+    public abstract boolean isExecutedInThread();//是否是在隔离线程里执行的（先线程池模式隔离）
 
-    public abstract boolean isResponseThreadPoolRejected();
+    public abstract boolean isResponseThreadPoolRejected(); // 响应被线程池拒绝
 
-    public abstract boolean isCommandCompletion();
+    public abstract boolean isCommandCompletion(); // command是否执行完成（包括成功、错误等）
 
-    public abstract boolean didCommandExecute();
-
+    public abstract boolean didCommandExecute();  // command命令是否执行过
+    // 提供两个public的功能函数，过滤
+    // 过滤只需要已经完成了的HystrixCommandEvent数据
+    // 过滤只需要执行过的数据
     public static final Func1<HystrixCommandEvent, Boolean> filterCompletionsOnly = new Func1<HystrixCommandEvent, Boolean>() {
         @Override
         public Boolean call(HystrixCommandEvent commandEvent) {

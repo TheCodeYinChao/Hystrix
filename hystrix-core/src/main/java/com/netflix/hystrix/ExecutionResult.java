@@ -28,20 +28,26 @@ import java.util.List;
  * <p>
  * This being immutable forces and ensure thread-safety instead of using AtomicInteger/ConcurrentLinkedQueue and determining
  * when it's safe to mutate the object directly versus needing to deep-copy clone to a new instance.
+ * 它代表执行的结果，是一个Immutable不可变对象。
  */
 public class ExecutionResult {
-    private final EventCounts eventCounts;
+    private final EventCounts eventCounts;//它是一个POJO，维护着如下字段/ 事件计数器
+    // 执行时异常。通过setException设置进来值
+    // 唯一放置地：`AbstractCommand#handleFailureViaFallback`
     private final Exception failedExecutionException;
-    private final Exception executionException;
-    private final long startTimestamp;
+    // 通过`setExecutionException`放进来。只要是执行失败（线程池拒绝，timeout等等都会设置）
+    private final Exception executionException;//在检查fallabck之前发出的异常（也就是执行run时就抛出异常了）。当是timeout/short-circuit/rejection/bad request等情况时，值同上
+    // 准备执行目标方法的时候，标记一下时刻
+    private final long startTimestamp;//命令开始执行的时刻
     private final int executionLatency; //time spent in run() method
-    private final int userThreadLatency; //time elapsed between caller thread submitting request and response being visible to it
-    private final boolean executionOccurred;
-    private final boolean isExecutedInThread;
+    private final int userThreadLatency; //使用线程方式提交任务到得到resposne之间的时间间隔time elapsed between caller thread submitting request and response being visible to it
+    private final boolean executionOccurred;//是否执行 // 只要目标方法执行了就标记为true（不管成功or失败）
+    private final boolean isExecutedInThread;//是否在线程隔离里执行的
     private final HystrixCollapserKey collapserKey;
 
     private static final HystrixEventType[] ALL_EVENT_TYPES = HystrixEventType.values();
     private static final int NUM_EVENT_TYPES = ALL_EVENT_TYPES.length;
+    // EXCEPTION_PRODUCING_EVENTS和TERMINAL_EVENTS对事件类型进行了归类
     private static final BitSet EXCEPTION_PRODUCING_EVENTS = new BitSet(NUM_EVENT_TYPES);
     private static final BitSet TERMINAL_EVENTS = new BitSet(NUM_EVENT_TYPES);
 
@@ -56,6 +62,13 @@ public class ExecutionResult {
     }
 
     public static class EventCounts {
+        /**
+         * BitSet events：HystrixEventType的所有可能值
+         * int numEmissions：发射数。发送HystrixEventType.EMIT事件时，+1
+         * int numFallbackEmissions：降级的发射数。发送FALLBACK_EMIT事件时，+1
+         * int numCollapsed：合并数。发送HystrixEventType.COLLAPSED事件时，+1
+         */
+
         private final BitSet events;
         private final int numEmissions;
         private final int numFallbackEmissions;
@@ -95,6 +108,7 @@ public class ExecutionResult {
                         localNumCollapsed++;
                         break;
                     default:
+                        //也就是说，只有这三种事件可被识别，对于其它类型的事件，一律执行newBitSet.set(eventType.ordinal());，也就说仅仅只记录值关心此事件发生过与否，而并不关心触发次数。
                         newBitSet.set(eventType.ordinal());
                         break;
                 }
@@ -104,11 +118,16 @@ public class ExecutionResult {
             this.numFallbackEmissions = localNumFallbackEmits;
             this.numCollapsed = localNumCollapsed;
         }
+        /**
+         *这两个方法是事件计数方法，但是非public，仅ExecutionResult内会有调用。事件次数记录下来后，下面便是提供的public访问方法：
+         */
 
+
+        // 为指定事件增加一次计数
         EventCounts plus(HystrixEventType eventType) {
             return plus(eventType, 1);
         }
-
+        // 增加指定次数（一次性可增加N次）
         EventCounts plus(HystrixEventType eventType, int count) {
             BitSet newBitSet = (BitSet) events.clone();
             int localNumEmits = numEmissions;
@@ -134,14 +153,34 @@ public class ExecutionResult {
             return new EventCounts(newBitSet, localNumEmits, localNumFallbackEmits, localNumCollapsed);
         }
 
+        // 用于判断：事件计数器里是否记录有此事件（非常重要）
+        // isSuccessfulExecution -> 看是否记录SUCCESS事件
+        // isFailedExecution -> 看是否记录了FAILURE事件
+        // isResponseFromFallback -> 看是否记录了FALLBACK_SUCCESS事件
+        // isResponseTimedOut -> 看是否记录了TIMEOUT事件
+        // isResponseShortCircuited -> 看是否记录了SHORT_CIRCUITED事件
         public boolean contains(HystrixEventType eventType) {
             return events.get(eventType.ordinal());
         }
 
+        // 只要包含other里的任何一个事件类型，就会返回true
+        // 使用：比如异常类型(BAD_REQUEST/FALLBACK_FAILURE)只要有一种就算异常状态呗
+        // 还有TERMINAL类型，如SUCCESS/BAD_REQUEST/FALLBACK_SUCCESS/FALLBACK_FAILURE均属于结束类型
         public boolean containsAnyOf(BitSet other) {
             return events.intersects(other);
         }
+        // 拿到指定事件类型的**次数**
 
+        /**
+         * 针对getCount()方法，做如下补充说明：
+         *
+         * 若是可识别的三种类型，直接返回统计数字即可
+         * 此处唯独对EXCEPTION_THROWN异常类型记数做了分类处理：BAD_REQUEST、FALLBACK_FAILURE、FALLBACK_MISSING、FALLBACK_REJECTION四种类型均数据异常抛出类型。为嘛自己这种类型不算？是因为该种类型系统不会发射出来，所以没必要算作里面~
+         * 其它类型：有就是1，没有就是0
+         * 这就是事件计数器EventCounts的所有内容。它对公并未曝露public的事件记录方法，这种动作是被ExecutionResult所代劳。
+         * @param eventType
+         * @return
+         */
         public int getCount(HystrixEventType eventType) {
             switch (eventType) {
                 case EMIT: return numEmissions;
@@ -203,6 +242,7 @@ public class ExecutionResult {
     // we can return a static version since it's immutable
     static ExecutionResult EMPTY = ExecutionResult.from();
 
+    // 内部调用new EventCounts(eventTypes)用于记录事件（对应事件次数+1）
     public static ExecutionResult from(HystrixEventType... eventTypes) {
         boolean didExecutionOccur = false;
         for (HystrixEventType eventType: eventTypes) {
@@ -223,7 +263,7 @@ public class ExecutionResult {
             default: return false;
         }
     }
-
+    // ===各种set方法：每个set方法都返回一个新的ExecutionResult 实例===
     public ExecutionResult setExecutionOccurred() {
         return new ExecutionResult(eventCounts, startTimestamp, executionLatency, userThreadLatency,
                 failedExecutionException, executionException, true, isExecutedInThread, collapserKey);
@@ -258,6 +298,7 @@ public class ExecutionResult {
         return new ExecutionResult(eventCounts, startTimestamp, executionLatency, userThreadLatency,
                 failedExecutionException, executionException, executionOccurred, false, collapserKey);
     }
+    // 注意：这方法里写死的事件类型：COLLAPSED
 
     public ExecutionResult markCollapsed(HystrixCollapserKey collapserKey, int sizeOfBatch) {
         return new ExecutionResult(eventCounts.plus(HystrixEventType.COLLAPSED, sizeOfBatch), startTimestamp, executionLatency, userThreadLatency,
@@ -276,7 +317,8 @@ public class ExecutionResult {
 
     /**
      * Creates a new ExecutionResult by adding the defined 'event' to the ones on the current instance.
-     *
+     *	// 记录事件：记录事件，对应事件+1
+     * 	// 内部依赖于事件计数器的plus方法
      * @param eventType event to add
      * @return new {@link ExecutionResult} with event added
      */
@@ -311,7 +353,7 @@ public class ExecutionResult {
     public int getUserThreadLatency() {
         return userThreadLatency;
     }
-
+    // 纳秒的表现形式
     public long getCommandRunStartTimeInNanos() {
         return startTimestamp * 1000 * 1000;
     }
@@ -327,7 +369,7 @@ public class ExecutionResult {
     public HystrixCollapserKey getCollapserKey() {
         return collapserKey;
     }
-
+    // 是否被信号量拒绝：只需看是否记录了此事件即可
     public boolean isResponseSemaphoreRejected() {
         return eventCounts.contains(HystrixEventType.SEMAPHORE_REJECTED);
     }
@@ -357,7 +399,9 @@ public class ExecutionResult {
     public boolean executionOccurred() {
         return executionOccurred;
     }
-
+    // 结果里是否包含有终止时间：
+    //SUCCESS/BAD_REQUEST/FALLBACK_SUCCESS/FALLBACK_FAILURE/FALLBACK_REJECTION
+    // FALLBACK_MISSING/RESPONSE_FROM_CACHE/CANCELLED等这些都算终止喽
     public boolean containsTerminalEvent() {
         return eventCounts.containsAnyOf(TERMINAL_EVENTS);
     }

@@ -25,7 +25,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Refinement of {@link BucketedCounterStream} which accumulates counters infinitely in the bucket-reduction step
- *
+ * 累计统计流 BucketedCumulativeCounterStream
+ * 它和BucketedRollingCounterStream的区别是：它在减桶的过程中，持续/无限累积计数。
  * @param <Event> type of raw data that needs to get summarized into a bucket
  * @param <Bucket> type of data contained in each bucket
  * @param <Output> type of data emitted to stream subscribers (often is the same as A but does not have to be)
@@ -40,7 +41,7 @@ public abstract class BucketedCumulativeCounterStream<Event extends HystrixEvent
         super(stream, numBuckets, bucketSizeInMs, reduceCommandCompletion);
 
         this.sourceStream = bucketedStream
-                .scan(getEmptyOutputValue(), reduceBucket)
+                .scan(getEmptyOutputValue(), reduceBucket)//使用scan 一直扫描
                 .skip(numBuckets)
                 .doOnSubscribe(new Action0() {
                     @Override
@@ -55,10 +56,10 @@ public abstract class BucketedCumulativeCounterStream<Event extends HystrixEvent
                     }
                 })
                 .share()                        //multiple subscribers should get same data
-                .onBackpressureDrop();          //if there are slow consumers, data should not buffer
+                .onBackpressureDrop();          //if there are slow consumers, data should not buffer// 背压：多余的直接弃掉
     }
 
-    @Override
+    @Override	// 实现父类方法
     public Observable<Output> observe() {
         return sourceStream;
     }

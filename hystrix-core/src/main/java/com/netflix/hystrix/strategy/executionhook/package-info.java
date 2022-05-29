@@ -15,7 +15,7 @@
  */
 /**
  * Strategy definition for execution hook.
- * 
+ * 执行钩子的策略定义。
  * @since 1.2.0
  */
 package com.netflix.hystrix.strategy.executionhook;

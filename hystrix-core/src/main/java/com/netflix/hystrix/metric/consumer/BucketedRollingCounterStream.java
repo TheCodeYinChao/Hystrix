@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Refinement of {@link BucketedCounterStream} which reduces numBuckets at a time.
- *
  * @param <Event> type of raw data that needs to get summarized into a bucket
  * @param <Bucket> type of data contained in each bucket
  * @param <Output> type of data emitted to stream subscribers (often is the same as A but does not have to be)
@@ -45,7 +44,7 @@ public abstract class BucketedRollingCounterStream<Event extends HystrixEvent, B
                 return window.scan(getEmptyOutputValue(), reduceBucket).skip(numBuckets);
             }
         };
-        this.sourceStream = bucketedStream      //stream broken up into buckets
+        this.sourceStream = bucketedStream
                 .window(numBuckets, 1)          //emit overlapping windows of buckets
                 .flatMap(reduceWindowToSummary) //convert a window of bucket-summaries into a single summary
                 .doOnSubscribe(new Action0() {
@@ -60,8 +59,8 @@ public abstract class BucketedRollingCounterStream<Event extends HystrixEvent, B
                         isSourceCurrentlySubscribed.set(false);
                     }
                 })
-                .share()                        //multiple subscribers should get same data
-                .onBackpressureDrop();          //if there are slow consumers, data should not buffer
+                .share()                        //multiple subscribers should get same data多个订阅者应该获得相同的数据
+                .onBackpressureDrop();          //if there are slow consumers, data should not buffer如果有慢速消费者，数据就不应该缓冲
     }
 
     @Override

@@ -24,7 +24,7 @@ import com.netflix.hystrix.exception.HystrixRuntimeException;
 
 /**
  * Common interface for executables that implement the Observable methods {@link #observe()} and {@link #toObservable()} so client code can treat them the same and combine in typed collections if desired.
- * 
+ * 期望通过订阅式实现异步获取结果。
  * @param <R>
  */
 public interface HystrixObservable<R> extends HystrixInvokable<R> {
@@ -57,6 +57,7 @@ public interface HystrixObservable<R> extends HystrixInvokable<R> {
      *             via {@code Observer#onError} if invalid arguments or state were used representing a user failure, not a system failure
      * @throws IllegalStateException
      *             if invoked more than once
+     *             ：提供饥饿模式的Observable实例：它会立马启动执行
      */
     public Observable<R> observe();
 
@@ -88,6 +89,7 @@ public interface HystrixObservable<R> extends HystrixInvokable<R> {
      *             via {@code Observer#onError} if invalid arguments or state were used representing a user failure, not a system failure
      * @throws IllegalStateException
      *             if invoked more than once
+     *             提供Lazy/defer延迟模式的Observable实例：只有在订阅了Observable之后，才惰性地开始执行命令
      */
     public Observable<R> toObservable();
     

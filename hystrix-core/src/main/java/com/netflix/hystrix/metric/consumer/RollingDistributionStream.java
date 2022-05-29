@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
+ * 在指定时间窗口内分布流。说到分布，所以和统计、画图有关。。
  * Maintains a stream of distributions for a given Command.
  * There is a rolling window abstraction on this stream.
  * The latency distribution object is calculated over a window of t1 milliseconds.  This window has b buckets.
@@ -104,7 +105,7 @@ public class RollingDistributionStream<Event extends HystrixEvent> {
                 .share()
                 .onBackpressureDrop();
     }
-
+    // 订阅者可以订阅消费消息，得到各种分位数，都存在CachedValuesHistogram里呢
     public Observable<CachedValuesHistogram> observe() {
         return rollingDistributionStream;
     }

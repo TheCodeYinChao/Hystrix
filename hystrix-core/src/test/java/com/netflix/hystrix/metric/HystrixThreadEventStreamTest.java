@@ -29,6 +29,9 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
+/**
+ * 事件流test
+ */
 public class HystrixThreadEventStreamTest {
 
     HystrixCommandKey commandKey;

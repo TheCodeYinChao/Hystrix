@@ -159,6 +159,7 @@ public interface HystrixCircuitBreaker {
         private Subscription subscribeToStream() {
             /*
              * This stream will recalculate the OPEN/CLOSED status on every onNext from the health stream
+             * 此流将从运行状况流中重新计算每个onNext上的OPEN/CLOSED状态
              */
             return metrics.getHealthCountsStream()
                     .observe()

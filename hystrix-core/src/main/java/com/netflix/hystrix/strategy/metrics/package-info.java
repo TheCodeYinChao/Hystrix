@@ -15,7 +15,7 @@
  */
 /**
  * Strategy definition for publishing metrics and default implementation.
- * 
+ * 发布度量标准和默认实现的策略定义。
  * @since 1.0.0
  */
 package com.netflix.hystrix.strategy.metrics;

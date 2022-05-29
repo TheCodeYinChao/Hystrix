@@ -22,6 +22,7 @@ import java.util.List;
 
 /**
  * Various states/events that execution can result in or have tracked.
+ * 执行可能导致或跟踪的各种状态/事件。
  * <p>
  * These are most often accessed via {@link HystrixRequestLog} or {@link HystrixCommand#getExecutionEvents()}.
  */
